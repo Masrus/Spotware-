@@ -1,23 +1,693 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Анализ пользователей Форекс приложения | Интерактивный дашборд</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
 
-  <!DOCTYPE html>
-  <html lang="en">
-    <head>
-      
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>🥦 Animate Scroll Transition</title>
-      <meta name="description" content="This web app enhances user experience by animating transitions between screens, transforming large numbers into a logo while creating engaging visual effects." />
-      <meta name="robots" content="noindex, nofollow" />
-      <style>html, body { height: 100%; margin: 0; } #root { height: 100%; }</style>
-      
-      <script type="module" crossorigin src="/assets/index-CnL01aNq.js"></script>
-      <link rel="stylesheet" crossorigin href="/assets/index-jCcX3Y1R.css">
-    </head>
+        /* PASSWORD SCREEN */
+        .password-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            z-index: 9999;
+            flex-direction: column;
+        }
 
-    <body>
-      
-      <div id="root"></div>
-      
-    </body>
-  </html>
-  
+        .password-screen.hidden {
+            display: none;
+        }
+
+        .password-box {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .password-box h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .password-box p {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .password-box input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            transition: border-color 0.3s;
+        }
+
+        .password-box input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .password-box button {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .password-box button:hover {
+            background: #5568d3;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            width: 100%;
+            max-width: 1400px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            padding: 40px;
+            margin-bottom: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #333;
+        }
+
+        header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin: 0 5px;
+        }
+
+        /* TABS */
+        .tab-buttons {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .tab-btn:hover {
+            color: #333;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* SEGMENT GRID */
+        .segment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        .segment-card {
+            background: #f8f9fa;
+            border: 2px solid #e8e8e8;
+            border-radius: 8px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .segment-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .segment-card.active {
+            border: 2px solid #667eea;
+            background: #f0f4ff;
+        }
+
+        .segment-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .segment-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .segment-meta {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 12px;
+        }
+
+        .segment-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .tag {
+            background: white;
+            border: 1px solid #e0e0e0;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #666;
+        }
+
+        /* DETAILS SECTION */
+        .details-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .details-section h2 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .details-section p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .details-subtitle {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-top: 20px;
+            margin-bottom: 12px;
+        }
+
+        /* METRICS GRID */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .metric {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .metric-label {
+            font-size: 11px;
+            color: #999;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        /* TRAIT LIST */
+        .traits-list {
+            background: white;
+            border-radius: 6px;
+            padding: 16px;
+            line-height: 1.8;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .traits-list li {
+            margin-bottom: 8px;
+            list-style-position: inside;
+        }
+
+        /* DRIVER ITEMS */
+        .driver-section {
+            margin-bottom: 28px;
+        }
+
+        .driver-section h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+        }
+
+        .driver-item {
+            background: white;
+            border-left: 3px solid #667eea;
+            border-radius: 0;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-radius: 4px;
+        }
+
+        .driver-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+
+        .driver-desc {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        /* BEHAVIOR ITEMS */
+        .behavior-item {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 10px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .behavior-item strong {
+            color: #667eea;
+        }
+
+        /* FOOTER */
+        footer {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #f0f0f0;
+            color: #999;
+            font-size: 12px;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            header h1 {
+                font-size: 24px;
+            }
+
+            .tab-buttons {
+                overflow-x: auto;
+            }
+
+            .segment-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- PASSWORD SCREEN -->
+    <div class="password-screen" id="passwordScreen">
+        <div class="password-box">
+            <h1>🔐 Защищенный дашборд</h1>
+            <p>Введите пароль для доступа</p>
+            <div class="error-message" id="errorMessage">Неверный пароль</div>
+            <input 
+                type="password" 
+                id="passwordInput" 
+                placeholder="Пароль"
+                autocomplete="off"
+            >
+            <button onclick="checkPassword()">Войти</button>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content" id="mainContent" style="display: none;">
+        <div class="container">
+            <header>
+                <h1>📊 Анализ пользователей Форекс приложения</h1>
+                <p>Сегментация • Decision Drivers • Поведенческие паттерны</p>
+                <span class="badge">Q1 2026</span>
+                <span class="badge">Интерактивный дашборд</span>
+            </header>
+
+            <!-- TABS -->
+            <div class="tab-buttons">
+                <button class="tab-btn active" onclick="switchTab('segments')">1️⃣ Сегменты</button>
+                <button class="tab-btn" onclick="switchTab('drivers')">2️⃣ Decision Drivers</button>
+                <button class="tab-btn" onclick="switchTab('behavior')">3️⃣ Поведение</button>
+            </div>
+
+            <!-- TAB 1: SEGMENTS -->
+            <div id="segments" class="section active">
+                <p style="color: #666; margin-bottom: 20px;">Кликните на сегмент для подробной информации</p>
+                <div class="segment-grid" id="segmentList"></div>
+                <div id="segmentDetails"></div>
+            </div>
+
+            <!-- TAB 2: DRIVERS -->
+            <div id="drivers" class="section">
+                <div id="driversContent"></div>
+            </div>
+
+            <!-- TAB 3: BEHAVIOR -->
+            <div id="behavior" class="section">
+                <div id="behaviorContent"></div>
+            </div>
+
+            <footer>
+                <p>Документ подготовлен на основе интернет-исследований и best practices форекс-индустрии</p>
+                <p>Для скачивания полного анализа см. прилагаемые файлы</p>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        // ===== PASSWORD PROTECTION =====
+        const CORRECT_PASSWORD = "design-team-sw"; // ИЗМЕНИ НА СВОЙ ПАРОЛЬ!
+
+        function checkPassword() {
+            const input = document.getElementById('passwordInput');
+            const error = document.getElementById('errorMessage');
+            
+            if (input.value === CORRECT_PASSWORD) {
+                document.getElementById('passwordScreen').classList.add('hidden');
+                document.getElementById('mainContent').style.display = 'block';
+                localStorage.setItem('dashboardAuth', 'true');
+            } else {
+                error.style.display = 'block';
+                input.value = '';
+                input.focus();
+                setTimeout(() => { error.style.display = 'none'; }, 3000);
+            }
+        }
+
+        document.getElementById('passwordInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') checkPassword();
+        });
+
+        // Check if already authenticated
+        if (localStorage.getItem('dashboardAuth') === 'true') {
+            document.getElementById('passwordScreen').classList.add('hidden');
+            document.getElementById('mainContent').style.display = 'block';
+        } else {
+            document.getElementById('passwordInput').focus();
+        }
+
+        // ===== DATA =====
+        const segments = [
+            {
+                id: 'scalper',
+                icon: '⚡',
+                name: 'Скальпер (Scalper)',
+                size: '15%',
+                experience: 'Профессионал',
+                desc: 'Активный трейдер, торгует внутридневно на малых таймфреймах. Требует молниеносное исполнение и низкие спреды. Максимум сделок в день.',
+                metrics: { users: '15%', avgDailyTrades: '20-50', avgSessionTime: '3-4 ч', retention: '85%', ltv: '$$$' },
+                traits: ['Огромная чувствительность к скорости исполнения', 'Обсессивный контроль спредов', 'Использует продвинутые инструменты (графики, советники)', 'Высокий риск/высокая прибыль стратегия'],
+                drivers: [
+                    { title: 'Скорость исполнения', desc: 'Они выбирают платформы с минимальными задержками (< 100ms). Даже 50ms разницы влияет на прибыль.' },
+                    { title: 'Низкие спреды', desc: 'Спреды прямо вычитаются из профита. 0.1 пипса разницы = тысячи в день.' },
+                    { title: 'MT4/MT5 совместимость', desc: 'Привычный интерфейс, советники, индикаторы. Не хотят переучиваться.' },
+                    { title: 'Стабильность платформы', desc: 'Любой даунтайм = потерянные сделки. Требуют 99.99% uptime.' }
+                ],
+                behavior: [
+                    'accountCreated → BrokerSelection (выбор оптимального брокера)',
+                    'AddFunds (небольшие суммы) → 20-50 ClosePositions в день',
+                    'chartTypeChanged × 20+ (постоянная оптимизация)',
+                    'AlertsSettings (жесткие алерты по спредам и балансу)'
+                ]
+            },
+            {
+                id: 'swing',
+                icon: '📈',
+                name: 'Свинг трейдер (Swing Trader)',
+                size: '25%',
+                experience: 'Средний/Профессионал',
+                desc: 'Держит позиции на несколько дней/недель. Анализирует макро-тренды. Баланс между анализом и торговлей.',
+                metrics: { users: '25%', avgDailyTrades: '2-5', avgSessionTime: '1-2 ч', retention: '78%', ltv: '$$' },
+                traits: ['Fokus на техническом анализе', 'Долгие сессии исследования', 'Среднее количество позиций одновременно', 'Ориентирован на соотношение risk/reward'],
+                drivers: [
+                    { title: 'Качественные графики', desc: 'Нужны многообразные индикаторы, линии тренда, паттерны (cup & handle, головы и плечи).' },
+                    { title: 'Аналитика и исследования', desc: 'Экономический календарь, новости, анализ от экспертов на платформе.' },
+                    { title: 'Управление риском', desc: 'Стоп-лоссы, тейк-профиты, процент от баланса при открытии.' },
+                    { title: 'Копирование сделок', desc: 'Интерес к стратегиям других трейдеров (copy trading), получение идей.' }
+                ],
+                behavior: [
+                    'chartTutorialStarted → Finished → ChartOptionList (настройка индикаторов)',
+                    'blotterOpened, blotterFilterApplied × 5-10 (анализ прошлых сделок)',
+                    'CopyPositions (мониторинг других трейдеров)',
+                    'ClosePositions × 2-5 в день (удерживание позиций несколько дней)'
+                ]
+            },
+            {
+                id: 'copier',
+                icon: '👥',
+                name: 'Копировщик (Copy Trader)',
+                size: '30%',
+                experience: 'Начинающий/Средний',
+                desc: 'Верит в силу copy-trading. Следит за другими трейдерами и копирует их позиции. Минимальный личный анализ.',
+                metrics: { users: '30%', avgDailyTrades: '0-2', avgSessionTime: '20-30 мин', retention: '65%', ltv: '$' },
+                traits: ['Избегает самостоятельного анализа', 'Социально ориентирован', 'Ищет "проверенные стратегии"', 'Высокая чувствительность к убыткам'],
+                drivers: [
+                    { title: 'Социальная компонента', desc: 'Рейтинги трейдеров, истории успеха, социальные вмешательства.' },
+                    { title: 'Легкость настройки', desc: '1 клик чтоб начать копировать. Не должно быть технических барьеров.' },
+                    { title: 'Прозрачность и статистика', desc: 'Видят ROI сигнальщика, drawdown, win rate - все понятно.' },
+                    { title: 'Защита от убытков', desc: 'Стоп-лосс на скопированные позиции, управление риском по размеру копии.' }
+                ],
+                behavior: [
+                    'accountCreated → AddFunds (небольшое пополнение)',
+                    'CopyPositionDetails × 3-10 (изучение топовых сигнальщиков)',
+                    'copyingStarted (активация копирования)',
+                    'chatOpened, chatMessageSent (общение в сообществе)',
+                    'copyingStopped/Restarted (частые переключения между сигнальщиками)'
+                ]
+            },
+            {
+                id: 'learner',
+                icon: '📚',
+                name: 'Учащийся (Learner)',
+                size: '20%',
+                experience: 'Начинающий',
+                desc: 'Новичок на форексе. Сначала читает, потом пробует. Нуждается в обучении и мотивации. Много демо-торговли.',
+                metrics: { users: '20%', avgDailyTrades: '0-1', avgSessionTime: '30 мин-1 ч', retention: '40%', ltv: '$' },
+                traits: ['Высокая потребность в образовании', 'Перегруженность информацией', 'Страх потери денег', 'Ищет гарантии успеха'],
+                drivers: [
+                    { title: 'Образовательный контент', desc: 'Видео-уроки, вебинары, интерактивные гайды от основ до продвинутого.' },
+                    { title: 'Демо счет', desc: 'Безрисковое тестирование всего. Обязателен!' },
+                    { title: 'Наставничество', desc: 'Гайды, чат-поддержка, менторы (бесплатные или премиум).' },
+                    { title: 'Геймификация', desc: 'Прогресс, квесты, значки, рейтинги помогают остаться на платформе.' }
+                ],
+                behavior: [
+                    'accountCreated (регистрация)',
+                    'Cold start × 2-5, 15SecInApp × 10+ (короткие визиты)',
+                    'chartTutorialStarted → Skipped/Finished (может пропустить обучение)',
+                    'ChartOptionList (экспериментирует с опциями)',
+                    'chatOpened (вопросы в поддержке)'
+                ]
+            },
+            {
+                id: 'passive',
+                icon: '💤',
+                name: 'Пассивный инвестор (Passive)',
+                size: '10%',
+                experience: 'Начинающий',
+                desc: 'Открыл счет, но торгует редко или вообще не торгует. Может использовать как инвестиционный счет. Потенциальный churn.',
+                metrics: { users: '10%', avgDailyTrades: '0', avgSessionTime: '5-10 мин', retention: '25%', ltv: '~$0' },
+                traits: ['Низкая мотивация', 'Страх за деньги', 'Может попытаться когда-нибудь, но не сейчас', 'Часто забывает о счете'],
+                drivers: [
+                    { title: 'Простота начала', desc: 'Низкие барьеры входа. "Может быть когда-нибудь буду торговать".' },
+                    { title: 'Переоценка рисков', desc: 'Боится потерять деньги. Нужны гарантии безопасности и страховки.' },
+                    { title: 'Альтернативные доходы', desc: 'Интерес к процентам на остаток, партнерским программам, рефералам.' },
+                    { title: 'Удобство', desc: 'Просто хранить деньги, иногда смотреть котировки, без давления.' }
+                ],
+                behavior: [
+                    'accountCreated (импульсивное создание)',
+                    'BrokerSelection (быстрый выбор)',
+                    'AddFunds (редко)',
+                    'Cold start × 1-2, 15SecInApp (редкие визиты)',
+                    'Практически нет торговых событий, высокий риск churn'
+                ]
+            }
+        ];
+
+        // ===== RENDER FUNCTIONS =====
+        function renderSegments() {
+            const container = document.getElementById('segmentList');
+            container.innerHTML = segments.map(seg => `
+                <div class="segment-card" onclick="selectSegment('${seg.id}')">
+                    <div class="segment-icon">${seg.icon}</div>
+                    <div class="segment-title">${seg.name}</div>
+                    <div class="segment-meta">${seg.size} пользователей</div>
+                    <div class="segment-tags">
+                        <span class="tag">${seg.experience}</span>
+                        <span class="tag">${seg.metrics.avgDailyTrades} сделок</span>
+                    </div>
+                </div>
+            `).join('');
+            
+            selectSegment('scalper');
+        }
+
+        function selectSegment(segmentId) {
+            document.querySelectorAll('.segment-card').forEach(c => c.classList.remove('active'));
+            event.currentTarget?.classList.add('active');
+            
+            const segment = segments.find(s => s.id === segmentId);
+            
+            const metricsHtml = Object.entries(segment.metrics).map(([k, v]) => {
+                const labels = { users: 'Доля', avgDailyTrades: 'Сделок/день', avgSessionTime: 'Время сеанса', retention: 'Retention', ltv: 'LTV' };
+                return `<div class="metric"><div class="metric-label">${labels[k]}</div><div class="metric-value">${v}</div></div>`;
+            }).join('');
+            
+            const traitsHtml = `<ul class="traits-list">${segment.traits.map(t => `<li>${t}</li>`).join('')}</ul>`;
+            
+            document.getElementById('segmentDetails').innerHTML = `
+                <div class="details-section">
+                    <h2>${segment.name}</h2>
+                    <p>${segment.desc}</p>
+                    <div class="details-subtitle">Ключевые метрики</div>
+                    <div class="metrics-grid">${metricsHtml}</div>
+                    <div class="details-subtitle">Характеристики</div>
+                    ${traitsHtml}
+                </div>
+            `;
+        }
+
+        function renderDrivers() {
+            const container = document.getElementById('driversContent');
+            let html = '';
+            
+            segments.forEach(seg => {
+                html += `<div class="driver-section"><h3>${seg.icon} ${seg.name}</h3>`;
+                seg.drivers.forEach(driver => {
+                    html += `<div class="driver-item"><div class="driver-title">${driver.title}</div><div class="driver-desc">${driver.desc}</div></div>`;
+                });
+                html += '</div>';
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function renderBehavior() {
+            const container = document.getElementById('behaviorContent');
+            let html = '';
+            
+            segments.forEach(seg => {
+                html += `<div class="driver-section"><h3>${seg.icon} ${seg.name}</h3>`;
+                seg.behavior.forEach((flow, idx) => {
+                    html += `<div class="behavior-item"><strong>${idx + 1}.</strong> ${flow}</div>`;
+                });
+                html += '</div>';
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(tab).classList.add('active');
+            
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            event.currentTarget?.classList.add('active');
+            
+            if (tab === 'drivers') renderDrivers();
+            if (tab === 'behavior') renderBehavior();
+        }
+
+        // ===== INIT =====
+        renderSegments();
+    </script>
+</body>
+</html>
